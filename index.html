@@ -59,4 +59,210 @@
                 <option value="Mecânica">Mecânica</option>
                 <option value="Elétrica">Elétrica</option>
                 <option value="Ar-condicionado">Ar-condicionado</option>
+                <option value="Vistoria DER">Vistoria DER</option>
+                <option value="Vistoria ANTT">Vistoria ANTT</option>
+                <option value="Tacógrafo">Tacógrafo</option>
+            </select>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[9px] font-bold ml-1">DATA</label><input type="date" id="m-data" class="w-full p-3 bg-gray-50 rounded-xl border text-xs"></div>
+                <div id="campo-validade" class="hidden"><label class="text-[9px] font-bold ml-1 text-red-500">VALIDADE</label><input type="date" id="m-validade" class="w-full p-3 bg-red-50 rounded-xl border border-red-200 text-xs"></div>
+            </div>
+            <input type="number" id="m-valor" placeholder="VALOR R$" class="w-full p-4 bg-gray-50 rounded-xl border font-bold text-green-600">
+            <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase shadow-lg">Registrar</button>
+        </div>
+        <div id="lista-manutencao" class="space-y-3"></div>
+    </div></div>
+
+    <!-- ABA 4: RELATÓRIOS (FINANCEIRO DETALHADO) -->
+    <div id="relatorio" class="page">
+        <header class="bg-white p-6 text-center border-b-2 border-yellow-400 mb-4">
+            <h1 class="text-xl font-black italic uppercase text-black italic flex items-center justify-center gap-2">
+                <i class="fas fa-file-invoice-dollar text-yellow-400"></i> FINANCEIRO
+            </h1>
+        </header>
+
+        <div class="p-5 max-w-md mx-auto space-y-6">
+            <!-- FILTROS -->
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-gray-50 space-y-4">
+                <select id="f-placa" class="w-full p-4 bg-gray-100 rounded-2xl border-none font-bold uppercase text-sm"></select>
                 
+                <div class="grid grid-cols-2 gap-3 uppercase font-black text-[10px]">
+                    <div>Início <input type="date" id="f-inicio" class="w-full p-3 mt-1 bg-gray-100 rounded-xl font-normal border-none"></div>
+                    <div>Fim <input type="date" id="f-fim" class="w-full p-3 mt-1 bg-gray-100 rounded-xl font-normal border-none"></div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                    <p class="text-[9px] font-black uppercase mb-3 text-gray-400 tracking-widest">Filtrar por Serviços:</p>
+                    <div id="f-servicos" class="grid grid-cols-1 gap-3 text-xs font-bold italic">
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Mecânica" class="w-4 h-4 accent-yellow-400" checked> Mecânica</label>
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Elétrica" class="w-4 h-4 accent-yellow-400" checked> Elétrica</label>
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Ar-condicionado" class="w-4 h-4 accent-yellow-400" checked> Ar-condicionado</label>
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Vistoria DER" class="w-4 h-4 accent-yellow-400" checked> Vistoria DER</label>
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Vistoria ANTT" class="w-4 h-4 accent-yellow-400" checked> Vistoria ANTT</label>
+                        <label class="flex items-center gap-3"><input type="checkbox" value="Tacógrafo" class="w-4 h-4 accent-yellow-400" checked> Tacógrafo</label>
+                    </div>
+                </div>
+
+                <button onclick="gerarRelatorioFiltrado()" class="w-full bg-yellow-400 text-black p-5 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all text-sm tracking-widest">
+                    Puxar Valores
+                </button>
+            </div>
+
+            <!-- RESULTADO TOTAL -->
+            <div class="bg-black text-white p-8 rounded-[2.5rem] shadow-2xl text-center relative overflow-hidden">
+                <p class="text-[10px] opacity-60 uppercase font-black tracking-[0.2em]">Gasto Total no Filtro</p>
+                <h2 id="f-resultado" class="text-4xl font-black text-yellow-400 mt-2">R$ 0,00</h2>
+            </div>
+
+            <!-- LISTA DETALHADA -->
+            <div id="detalhe-relatorio" class="space-y-3 pb-10">
+                <!-- Itens individuais aparecem aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU INFERIOR -->
+    <nav class="fixed bottom-6 left-4 right-4 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
+        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-home text-lg"></i></button>
+        <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-shuttle-van text-lg"></i></button>
+        <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-lg"></i></button>
+        <button onclick="showPage('relatorio')" id="btn-relatorio" class="opacity-30"><i class="fas fa-file-invoice-dollar text-lg"></i></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
+            authDomain: "shalonapp-702b3.firebaseapp.com",
+            projectId: "shalonapp-702b3",
+            storageBucket: "shalonapp-702b3.firebasestorage.app",
+            messagingSenderId: "843005158617",
+            appId: "1:843005158617:web:bda693516bb45332880ac8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- RELATÓRIO COM LISTA DETALHADA ---
+        window.gerarRelatorioFiltrado = async () => {
+            const placa = document.getElementById('f-placa').value;
+            const inicio = document.getElementById('f-inicio').value;
+            const fim = document.getElementById('f-fim').value;
+            const servicos = Array.from(document.querySelectorAll('#f-servicos input:checked')).map(c => c.value);
+
+            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("data", "desc")));
+            let total = 0;
+            const listaDiv = document.getElementById('detalhe-relatorio');
+            listaDiv.innerHTML = '<h3 class="text-[10px] font-black uppercase text-gray-400 text-center mb-4 italic tracking-[0.3em]">Extrato Detalhado</h3>';
+
+            snap.forEach(res => {
+                const m = res.data();
+                if (placa && m.placa !== placa) return;
+                if (!servicos.includes(m.tipo)) return;
+                if (inicio && m.data < inicio) return;
+                if (fim && m.data > fim) return;
+
+                total += parseFloat(m.valor) || 0;
+
+                // Adiciona item na lista abaixo do valor total
+                listaDiv.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-100 animate-fade">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-black text-gray-300 uppercase">${m.data.split('-').reverse().join('/')}</span>
+                            <span class="text-xs font-black text-black uppercase">${m.tipo}</span>
+                            <span class="text-[10px] font-bold text-yellow-600">${m.placa}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-black text-green-600">R$ ${parseFloat(m.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('f-resultado').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            if (total === 0) listaDiv.innerHTML = '<p class="text-center text-xs text-gray-400 italic">Nenhum serviço encontrado no filtro.</p>';
+        }
+
+        // --- HOME E OUTROS ---
+        window.atualizarHome = async () => {
+            const fSnap = await getDocs(collection(db, "frota"));
+            document.getElementById('qtd-veiculos').innerText = fSnap.size;
+            const mSnap = await getDocs(collection(db, "manutencao"));
+            const lVenc = document.getElementById('lista-vencidas');
+            const lPend = document.getElementById('lista-pendentes');
+            lVenc.innerHTML = ''; lPend.innerHTML = '';
+            const hoje = new Date();
+            const l60 = new Date(); l60.setDate(hoje.getDate() + 60);
+
+            mSnap.forEach(res => {
+                const m = res.data();
+                if (!m.validade) return;
+                const dVal = new Date(m.validade);
+                const card = `<div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 ${dVal < hoje ? 'border-red-500' : 'border-orange-400'} flex justify-between items-center text-xs"><div><b>${m.placa}</b><br>${m.tipo}</div><div class="text-right">Validade<br><b>${m.validade.split('-').reverse().join('/')}</b></div></div>`;
+                if (dVal < hoje) lVenc.innerHTML += card;
+                else if (dVal <= l60) lPend.innerHTML += card;
+            });
+        }
+
+        window.salvarManutencao = async () => {
+            const d = { placa: document.getElementById('m-placa').value, tipo: document.getElementById('m-tipo').value, data: document.getElementById('m-data').value, valor: document.getElementById('m-valor').value, validade: document.getElementById('m-validade').value || null, timestamp: new Date() };
+            if(!d.placa || !d.tipo || !d.valor) return alert('Preencha os campos!');
+            await addDoc(collection(db, "manutencao"), d);
+            carregarManutencoes(); atualizarHome();
+        }
+
+        window.carregarManutencoes = async () => {
+            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
+            const lista = document.getElementById('lista-manutencao');
+            lista.innerHTML = '';
+            snap.forEach(res => {
+                const m = res.data();
+                lista.innerHTML += `<div class="bg-white p-3 rounded-xl text-[10px] flex justify-between shadow-sm items-center border border-gray-100"><span><b>${m.placa}</b> | ${m.tipo} | R$ ${m.valor}</span><button onclick="deletarManutencao('${res.id}')">❌</button></div>`;
+            });
+        }
+
+        window.deletarManutencao = async (id) => { if(confirm('Excluir?')) { await deleteDoc(doc(db, "manutencao", id)); carregarManutencoes(); atualizarHome(); } }
+
+        window.verificarValidade = () => {
+            const t = document.getElementById('m-tipo').value;
+            document.getElementById('campo-validade').classList.toggle('hidden', !["Vistoria DER", "Vistoria ANTT", "Tacógrafo"].includes(t));
+        }
+
+        window.salvarVeiculo = async () => {
+            const p = document.getElementById('placa').value.toUpperCase();
+            if(!p) return;
+            await addDoc(collection(db, "frota"), { placa: p });
+            carregarFrota(); atualizarHome();
+        }
+
+        window.carregarFrota = async () => {
+            const snap = await getDocs(collection(db, "frota"));
+            const lista = document.getElementById('lista-frota');
+            const selM = document.getElementById('m-placa');
+            const selF = document.getElementById('f-placa');
+            lista.innerHTML = ''; 
+            selM.innerHTML = '<option value="">SELECIONE A VAN</option>'; 
+            selF.innerHTML = '<option value="">TODAS AS VANS</option>';
+            snap.forEach(res => {
+                const v = res.data();
+                selM.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
+                selF.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
+                lista.innerHTML += `<div class="bg-white p-4 rounded-xl flex justify-between shadow-sm items-center"><b>${v.placa}</b><button onclick="deletarVeiculo('${res.id}')" class="text-red-200 text-xs">EXCLUIR</button></div>`;
+            });
+        }
+
+        window.deletarVeiculo = async (id) => { if(confirm('Excluir?')) { await deleteDoc(doc(db, "frota", id)); carregarFrota(); atualizarHome(); } }
+
+        window.showPage = (pId) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pId).classList.add('active-page');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
+            document.getElementById('btn-' + pId).classList.remove('opacity-30');
+            document.getElementById('btn-' + pId).classList.add('text-yellow-400');
+        }
+
+        carregarFrota(); carregarManutencoes(); atualizarHome();
+    </script>
+</body>
+</html>
