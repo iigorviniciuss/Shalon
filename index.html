@@ -117,4 +117,115 @@
 
         // CARREGAR LISTA
         window.carregarFrota = async () => {
+            const querySnapshot = await getDocs(collection(db, "frota"));
+            const lista = document.getElementById('lista-frota');
+            lista.innerHTML = '';
+            querySnapshot.forEach((res) => {
+                const v = res.data();
+                lista.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center">
+                        <div onclick="prepararEdicao('${res.id}', '${v.placa}', '${v.descricao}', '${v.ano}')">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${v.descricao || 'Sem descrição'} | ${v.ano || '-'}</p>
+                            <p class="text-xl font-black">${v.placa}</p>
+                        </div>
+                        <button onclick="deletarVeiculo('${res.id}')" class="text-red-100 hover:text-red-500 p-2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>`;
+            });
+        }
+
+        // DELETAR
+        window.deletarVeiculo = async (id) => {
+            if(confirm('Deseja excluir este veículo permanentemente?')) {
+                await deleteDoc(doc(db, "frota", id));
+                carregarFrota();
+            }
+        }
+
+        // PREPARAR EDIÇÃO
+        window.prepararEdicao = (id, placa, desc, ano) => {
+            document.getElementById('veiculo-id').value = id;
+            document.getElementById('placa').value = placa;
+            document.getElementById('descricao').value = desc === 'undefined' ? '' : desc;
+            document.getElementById('ano').value = ano === 'undefined' ? '' : ano;
+            document.getElementById('btn-salvar').innerText = 'Atualizar Veículo';
+            document.getElementById('btn-cancelar').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        window.limparForm = () => {
+            document.getElementById('veiculo-id').value = '';
+            document.getElementById('placa').value = '';
+            document.getElementById('descricao').value = '';
+            document.getElementById('ano').value = '';
+            document.getElementById('btn-salvar').innerText = 'Salvar na Nuvem';
+            document.getElementById('btn-cancelar').classList.add('hidden');
+        }
+
+        carregarFrota();
+    </script>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
+            const activeBtn = document.getElementById('btn-' + pageId);
+            activeBtn.classList.remove('opacity-30'); activeBtn.classList.add('text-yellow-400');
+        }
+    </script>
+</body>
+</html>
+
+    <!-- MENU INFERIOR -->
+    <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
+        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-home text-xl"></i></button>
+        <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-truck-moving text-xl"></i></button>
+        <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-xl"></i></button>
+    </nav>
+
+    <!-- LOGICA FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
+          authDomain: "shalonapp-702b3.firebaseapp.com",
+          projectId: "shalonapp-702b3",
+          storageBucket: "shalonapp-702b3.firebasestorage.app",
+          messagingSenderId: "843005158617",
+          appId: "1:843005158617:web:bda693516bb45332880ac8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // SALVAR OU ATUALIZAR
+        window.salvarVeiculo = async () => {
+            const id = document.getElementById('veiculo-id').value;
+            const dados = {
+                placa: document.getElementById('placa').value.toUpperCase(),
+                descricao: document.getElementById('descricao').value,
+                ano: document.getElementById('ano').value
+            };
+
+            if(!dados.placa) return alert('A placa é obrigatória!');
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, "frota", id), dados);
+                    alert('✅ Atualizado!');
+                } else {
+                    await addDoc(collection(db, "frota"), dados);
+                    alert('🚛 Cadastrado com sucesso!');
+                }
+                limparForm();
+                carregarFrota();
+            } catch (e) { alert('Erro: ' + e); }
+        }
+
+        // CARREGAR LISTA
+        window.carregarFrota = async () => {
             const querySnapshot = await getDocs(collection(db, "fro
