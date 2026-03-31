@@ -79,4 +79,156 @@
                 <option value="Vistoria DER">Vistoria DER</option>
                 <option value="Vistoria ANTT">Vistoria ANTT</option>
                 <option value="Tacógrafo">Tacógrafo</option>
+            </select>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[9px] font-bold ml-1">DATA REALIZAÇÃO</label><input type="date" id="m-data" class="w-full p-3 bg-gray-50 rounded-xl border text-xs"></div>
+                <div id="campo-validade" class="hidden"><label class="text-[9px] font-bold ml-1 text-red-500">VALIDADE</label><input type="date" id="m-validade" class="w-full p-3 bg-red-50 rounded-xl border border-red-200 text-xs"></div>
+            </div>
+            <input type="number" id="m-valor" placeholder="VALOR R$" class="w-full p-4 bg-gray-50 rounded-xl border font-bold text-green-600">
+            <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase shadow-lg">Registrar</button>
+        </div>
+        <div id="lista-manutencao" class="space-y-4"></div>
+    </div></div>
+
+    <!-- MENU INFERIOR -->
+    <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
+        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-home text-xl"></i></button>
+        <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-shuttle-van text-xl"></i></button>
+        <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-xl"></i></button>
+    </nav>
+
+    <!-- LOGICA FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
+            authDomain: "shalonapp-702b3.firebaseapp.com",
+            projectId: "shalonapp-702b3",
+            storageBucket: "shalonapp-702b3.firebasestorage.app",
+            messagingSenderId: "843005158617",
+            appId: "1:843005158617:web:bda693516bb45332880ac8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- ATUALIZAR STATUS DA HOME ---
+        window.atualizarHome = async () => {
+            const frotaSnap = await getDocs(collection(db, "frota"));
+            document.getElementById('qtd-veiculos').innerText = frotaSnap.size;
+
+            const manuSnap = await getDocs(collection(db, "manutencao"));
+            const listaVencidas = document.getElementById('lista-vencidas');
+            const listaPendentes = document.getElementById('lista-pendentes');
             
+            listaVencidas.innerHTML = '';
+            listaPendentes.innerHTML = '';
+
+            const hoje = new Date();
+            const limite60dias = new Date();
+            limite60dias.setDate(hoje.getDate() + 60);
+
+            manuSnap.forEach(res => {
+                const m = res.data();
+                if (!m.validade) return;
+
+                const dataValidade = new Date(m.validade);
+                const formatada = m.validade.split('-').reverse().join('/');
+
+                const cardHtml = `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 ${dataValidade < hoje ? 'border-red-500' : 'border-orange-400'} animate-fade">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase">${m.tipo}</p>
+                                <p class="text-sm font-black">${m.placa}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-bold uppercase text-gray-400">Validade</p>
+                                <p class="text-xs font-black ${dataValidade < hoje ? 'text-red-500' : 'text-orange-500'}">${formatada}</p>
+                            </div>
+                        </div>
+                    </div>`;
+
+                if (dataValidade < hoje) {
+                    listaVencidas.innerHTML += cardHtml;
+                } else if (dataValidade <= limite60dias) {
+                    listaPendentes.innerHTML += cardHtml;
+                }
+            });
+
+            if (listaVencidas.innerHTML === '') listaVencidas.innerHTML = '<p class="text-[10px] text-gray-400 italic">Nenhuma vencida ✅</p>';
+            if (listaPendentes.innerHTML === '') listaPendentes.innerHTML = '<p class="text-[10px] text-gray-400 italic">Nada para os próximos 60 dias.</p>';
+        }
+
+        // --- MANUTENÇÃO ---
+        window.salvarManutencao = async () => {
+            const dados = {
+                placa: document.getElementById('m-placa').value,
+                tipo: document.getElementById('m-tipo').value,
+                data: document.getElementById('m-data').value,
+                valor: document.getElementById('m-valor').value,
+                validade: document.getElementById('m-validade').value || null,
+                timestamp: new Date()
+            };
+            await addDoc(collection(db, "manutencao"), dados);
+            carregarManutencoes(); atualizarHome();
+        }
+
+        window.carregarManutencoes = async () => {
+            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
+            const lista = document.getElementById('lista-manutencao');
+            lista.innerHTML = '';
+            snap.forEach(res => {
+                const m = res.data();
+                lista.innerHTML += `<div class="bg-white p-3 rounded-xl text-[11px] flex justify-between items-center shadow-sm">
+                    <span><b>${m.placa}</b> | ${m.tipo}</span>
+                    <button onclick="deletarManutencao('${res.id}')" class="text-red-300"><i class="fas fa-trash"></i></button>
+                </div>`;
+            });
+        }
+
+        window.deletarManutencao = async (id) => { if(confirm('Excluir?')) { await deleteDoc(doc(db, "manutencao", id)); carregarManutencoes(); atualizarHome(); } }
+
+        window.verificarValidade = () => {
+            const tipo = document.getElementById('m-tipo').value;
+            document.getElementById('campo-validade').classList.toggle('hidden', !["Vistoria DER", "Vistoria ANTT", "Tacógrafo"].includes(tipo));
+        }
+
+        // --- FROTA ---
+        window.salvarVeiculo = async () => {
+            const dados = { placa: document.getElementById('placa').value.toUpperCase(), descricao: document.getElementById('descricao').value };
+            await addDoc(collection(db, "frota"), dados);
+            carregarFrota(); atualizarHome();
+        }
+
+        window.carregarFrota = async () => {
+            const snap = await getDocs(collection(db, "frota"));
+            const lista = document.getElementById('lista-frota');
+            const selectM = document.getElementById('m-placa');
+            lista.innerHTML = ''; selectM.innerHTML = '<option value="">SELECIONE</option>';
+            snap.forEach(res => {
+                const v = res.data();
+                selectM.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
+                lista.innerHTML += `<div class="bg-white p-4 rounded-xl flex justify-between shadow-sm"><b>${v.placa}</b><button onclick="deletarVeiculo('${res.id}')">❌</button></div>`;
+            });
+        }
+
+        window.deletarVeiculo = async (id) => { if(confirm('Excluir van?')) { await deleteDoc(doc(db, "frota", id)); carregarFrota(); atualizarHome(); } }
+
+        // INIT
+        carregarFrota(); carregarManutencoes(); atualizarHome();
+    </script>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
+            document.getElementById('btn-' + pageId).classList.remove('opacity-30');
+            document.getElementById('btn-' + pageId).classList.add('text-yellow-400');
+        }
+    </script>
+</body>
+</html>
