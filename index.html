@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shalon Transportes</title>
+    <!-- Configuração de APP (PWA) -->
+    <link rel="manifest" href="data:application/manifest+json,{"name":"Shalon Transportes","short_name":"Shalon","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1042/1042680.png","sizes":"512x512","type":"image/png"}]}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 pb-20">
+    <header class="bg-white p-6 text-center shadow-md border-b-4 border-black">
+        <h1 class="text-3xl font-black italic">SHALON</h1>
+        <p class="text-xs font-bold tracking-[0.4em] text-gray-500 uppercase">Transportes</p>
+    </header>
+
+    <div id="app" class="p-4">
+        <div class="bg-black text-white p-6 rounded-3xl mb-6 shadow-2xl relative overflow-hidden">
+            <p class="text-[10px] uppercase tracking-widest opacity-60">Status da Frota</p>
+            <h2 class="text-xl font-bold italic text-yellow-400">Patrocínio - MG</h2>
+            <i class="fas fa-truck opacity-10 text-6xl absolute -right-4 -bottom-4"></i>
+        </div>
+
+        <button onclick="ativarNotificacoes()" id="btnAlert" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black p-5 rounded-2xl font-black shadow-lg flex items-center justify-center gap-3 transition-all active:scale-95 mb-8">
+            <i class="fas fa-bell animate-bounce"></i> ATIVAR ALERTAS DE 30 DIAS
+        </button>
+
+        <div class="space-y-4">
+            <h3 class="font-black text-gray-800 uppercase text-sm tracking-wider">Próximos Vencimentos</h3>
+            <div class="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-10 text-center text-gray-400">
+                <i class="fas fa-calendar-check text-4xl mb-3 opacity-20"></i>
+                <p class="text-sm">Tudo em dia em Patrocínio!</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-4 left-4 right-4 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center border border-gray-800">
+        <button class="text-yellow-400"><i class="fas fa-home text-xl"></i></button>
+        <button class="opacity-50"><i class="fas fa-truck-moving text-xl"></i></button>
+        <button class="opacity-50"><i class="fas fa-wrench text-xl"></i></button>
+        <button class="opacity-50"><i class="fas fa-file-invoice-dollar text-xl"></i></button>
+    </nav>
+
+    <script>
+        function ativarNotificacoes() {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    alert("✅ Shalon Transportes: Alertas de 30 dias ativados!");
+                    document.getElementById('btnAlert').innerHTML = '<i class="fas fa-check-circle"></i> ALERTAS ATIVOS';
+                    document.getElementById('btnAlert').classList.replace('bg-yellow-400', 'bg-green-500');
+                    document.getElementById('btnAlert').classList.add('text-white');
+                }
+            });
+        }
+        
+        // Simulação de verificação (30 dias)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi.addEventListener("fetch", (event) => {});');
+            });
+        }
+    </script>
+</body>
+</html>
