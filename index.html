@@ -3,45 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shalon Transportes</title>
+    <title>Shalon Transportes - Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .page { display: none; }
         .active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-100 pb-28 font-sans text-gray-900">
 
-    <!-- HOME -->
+    <!-- ABA 1: RELATÓRIO (HOME) -->
     <div id="home" class="page active-page">
         <header class="bg-white p-6 text-center shadow-sm border-b-2 border-yellow-400">
-            <h1 class="text-3xl font-black italic tracking-tighter uppercase">SHALON</h1>
-            <p class="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">Gestão de Frota</p>
+            <h1 class="text-3xl font-black italic tracking-tighter uppercase text-black">SHALON</h1>
+            <p class="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">Painel de Relatórios</p>
         </header>
-        <div class="p-5 max-w-md mx-auto text-center">
-            <div class="bg-black text-white p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden mb-6">
-                <h2 class="text-3xl font-bold italic text-yellow-400">SHALON APP</h2>
-                <p class="text-xs opacity-50 uppercase tracking-widest mt-2">Sistema de Controle Nuvem</p>
-                <i class="fas fa-shuttle-van text-8xl absolute -right-6 -bottom-4 opacity-10"></i>
+
+        <div class="p-5 max-w-md mx-auto space-y-6">
+            <!-- CARD TOTAL GERAL -->
+            <div class="bg-black text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                <p class="text-[10px] opacity-60 uppercase font-bold tracking-widest">Investimento Total em Manutenção</p>
+                <h2 id="total-geral" class="text-4xl font-black text-yellow-400 mt-1">R$ 0,00</h2>
+                <i class="fas fa-chart-line text-7xl absolute -right-4 -bottom-2 opacity-10"></i>
             </div>
-            <p class="text-gray-400 text-xs font-bold uppercase">Selecione uma opção no menu abaixo</p>
+
+            <!-- ALERTA DE VENCIMENTOS -->
+            <div>
+                <h3 class="text-sm font-black uppercase italic mb-3 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-500"></i> Próximos Vencimentos
+                </h3>
+                <div id="lista-vencimentos" class="space-y-3">
+                    <!-- Avisos de vistorias vencendo aparecem aqui -->
+                    <p class="text-xs text-gray-400 italic">Nenhuma vistoria vencendo nos próximos 30 dias.</p>
+                </div>
+            </div>
+
+            <!-- RESUMO POR VAN -->
+            <div>
+                <h3 class="text-sm font-black uppercase italic mb-3">Gastos por Veículo</h3>
+                <div id="resumo-por-van" class="space-y-2">
+                    <!-- Resumo de cada placa aparece aqui -->
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- FROTA -->
+    <!-- ABA 2: FROTA -->
     <div id="frota" class="page">
         <div class="p-6">
             <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2">
-                <i class="fas fa-shuttle-van text-yellow-500"></i> Veículos
+                <i class="fas fa-shuttle-van text-yellow-500"></i> Gerenciar Vans
             </h2>
             <div class="bg-white p-6 rounded-3xl shadow-md border-2 border-gray-50 mb-8">
                 <input type="hidden" id="veiculo-id">
                 <div class="space-y-3">
                     <input type="text" id="placa" placeholder="PLACA" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase">
-                    <input type="text" id="descricao" placeholder="DESCRIÇÃO (Ex: Van Sprinter)" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-medium">
+                    <input type="text" id="descricao" placeholder="DESCRIÇÃO (Ex: Sprinter 415)" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-medium">
                     <input type="number" id="ano" placeholder="ANO" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-medium">
                     <button onclick="salvarVeiculo()" id="btn-salvar-veiculo" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black shadow-lg uppercase">Salvar Veículo</button>
                     <button onclick="limparFormVeiculo()" id="btn-cancelar-veiculo" class="hidden w-full bg-gray-200 text-gray-500 p-2 rounded-xl font-bold uppercase text-xs">Cancelar</button>
@@ -51,21 +71,16 @@
         </div>
     </div>
 
-    <!-- MANUTENÇÃO -->
+    <!-- ABA 3: MANUTENÇÃO -->
     <div id="manutencao" class="page">
         <div class="p-6">
             <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2">
-                <i class="fas fa-tools text-yellow-500"></i> Manutenção
+                <i class="fas fa-tools text-yellow-500"></i> Registro de Serviço
             </h2>
-            
-            <!-- FORMULÁRIO MANUTENÇÃO -->
             <div class="bg-white p-6 rounded-3xl shadow-md border-2 border-gray-50 mb-8">
                 <div class="space-y-3">
-                    <select id="m-placa" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase">
-                        <option value="">SELECIONE A PLACA</option>
-                    </select>
-
-                    <select id="m-tipo" onchange="verificarValidade()" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold">
+                    <select id="m-placa" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase"></select>
+                    <select id="m-tipo" onchange="verificarValidade()" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold italic">
                         <option value="">TIPO DE SERVIÇO</option>
                         <option value="Mecânica">Manutenção Mecânica</option>
                         <option value="Elétrica">Manutenção Elétrica</option>
@@ -74,37 +89,25 @@
                         <option value="Vistoria ANTT">Vistoria ANTT</option>
                         <option value="Tacógrafo">Aferição de Tacógrafo</option>
                     </select>
-
                     <input type="text" id="m-desc" placeholder="DESCRIÇÃO DO SERVIÇO" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
-                    
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-[10px] font-bold ml-2 text-gray-400 uppercase">Data Realização</label>
-                            <input type="date" id="m-data" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold ml-2 text-gray-400 uppercase">Valor (R$)</label>
-                            <input type="number" id="m-valor" placeholder="0,00" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold">
-                        </div>
+                        <input type="date" id="m-data" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none text-xs">
+                        <input type="number" id="m-valor" placeholder="VALOR R$" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold text-green-600">
                     </div>
-
-                    <!-- CAMPO DE VALIDADE (OCULTO POR PADRÃO) -->
                     <div id="campo-validade" class="hidden animate-fade">
-                        <label class="text-[10px] font-bold ml-2 text-red-500 uppercase italic">Data de Validade (Vencimento)</label>
+                        <label class="text-[10px] font-black ml-2 text-red-500 uppercase italic">Data de Validade/Vencimento</label>
                         <input type="date" id="m-validade" class="w-full p-4 bg-red-50 rounded-xl border-2 border-red-200 focus:border-red-500 outline-none font-bold">
                     </div>
-
-                    <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black shadow-lg uppercase active:scale-95 transition-all">Registrar Serviço</button>
+                    <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black shadow-lg uppercase active:scale-95 transition-all">Registrar Agora</button>
                 </div>
             </div>
-
             <div id="lista-manutencao" class="space-y-4"></div>
         </div>
     </div>
 
     <!-- MENU INFERIOR -->
     <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
-        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-home text-xl"></i></button>
+        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-chart-bar text-xl"></i></button>
         <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-shuttle-van text-xl"></i></button>
         <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-xl"></i></button>
     </nav>
@@ -117,157 +120,4 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
             authDomain: "shalonapp-702b3.firebaseapp.com",
-            projectId: "shalonapp-702b3",
-            storageBucket: "shalonapp-702b3.firebasestorage.app",
-            messagingSenderId: "843005158617",
-            appId: "1:843005158617:web:bda693516bb45332880ac8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // --- FUNÇÕES DA FROTA ---
-        window.salvarVeiculo = async () => {
-            const id = document.getElementById('veiculo-id').value;
-            const dados = {
-                placa: document.getElementById('placa').value.toUpperCase(),
-                descricao: document.getElementById('descricao').value,
-                ano: document.getElementById('ano').value
-            };
-            if(!dados.placa) return alert('Placa obrigatória!');
-            try {
-                if(id) await updateDoc(doc(db, "frota", id), dados);
-                else await addDoc(collection(db, "frota"), dados);
-                limparFormVeiculo(); carregarFrota();
-            } catch (e) { alert(e); }
-        }
-
-        window.carregarFrota = async () => {
-            const snap = await getDocs(collection(db, "frota"));
-            const lista = document.getElementById('lista-frota');
-            const selectManut = document.getElementById('m-placa');
-            lista.innerHTML = '';
-            selectManut.innerHTML = '<option value="">SELECIONE A PLACA</option>';
-            snap.forEach(res => {
-                const v = res.data();
-                selectManut.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
-                lista.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center animate-fade">
-                        <div onclick="prepararEdicaoVeiculo('${res.id}', '${v.placa}', '${v.descricao}', '${v.ano}')">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase">${v.descricao} | ${v.ano}</p>
-                            <p class="text-xl font-black">${v.placa}</p>
-                        </div>
-                        <button onclick="deletarVeiculo('${res.id}')" class="text-red-400 p-2"><i class="fas fa-trash-alt"></i></button>
-                    </div>`;
-            });
-        }
-
-        // --- FUNÇÕES DE MANUTENÇÃO ---
-        window.verificarValidade = () => {
-            const tipo = document.getElementById('m-tipo').value;
-            const campoValidade = document.getElementById('campo-validade');
-            const tiposComValidade = ["Vistoria DER", "Vistoria ANTT", "Tacógrafo"];
-            if(tiposComValidade.includes(tipo)) campoValidade.classList.remove('hidden');
-            else campoValidade.classList.add('hidden');
-        }
-
-        window.salvarManutencao = async () => {
-            const dados = {
-                placa: document.getElementById('m-placa').value,
-                tipo: document.getElementById('m-tipo').value,
-                descricao: document.getElementById('m-desc').value,
-                data: document.getElementById('m-data').value,
-                valor: document.getElementById('m-valor').value,
-                validade: document.getElementById('m-validade').value || null,
-                timestamp: new Date()
-            };
-
-            if(!dados.placa || !dados.tipo || !dados.data) return alert('Preencha Placa, Tipo e Data!');
-
-            try {
-                await addDoc(collection(db, "manutencao"), dados);
-                alert('🛠️ Serviço registrado!');
-                document.getElementById('m-desc').value = '';
-                document.getElementById('m-valor').value = '';
-                document.getElementById('m-validade').value = '';
-                carregarManutencoes();
-            } catch (e) { alert(e); }
-        }
-
-        window.carregarManutencoes = async () => {
-            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
-            const lista = document.getElementById('lista-manutencao');
-            lista.innerHTML = '';
-            snap.forEach(res => {
-                const m = res.data();
-                const dataF = m.data.split('-').reverse().join('/');
-                const valF = m.validade ? m.validade.split('-').reverse().join('/') : null;
-                lista.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-md border-l-4 ${valF ? 'border-red-500' : 'border-gray-800'} animate-fade">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-bold text-yellow-600 uppercase">${m.placa}</p>
-                                <p class="font-black text-lg">${m.tipo}</p>
-                                <p class="text-sm text-gray-500">${m.descricao}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs font-bold text-gray-400">${dataF}</p>
-                                <p class="font-black text-green-600">R$ ${m.valor || '0,00'}</p>
-                            </div>
-                        </div>
-                        ${valF ? `<div class="mt-3 p-2 bg-red-50 rounded-lg border border-red-100 text-center">
-                            <p class="text-[10px] font-bold text-red-500 uppercase tracking-tighter">Vencimento da Vistoria: ${valF}</p>
-                        </div>` : ''}
-                        <button onclick="deletarManutencao('${res.id}')" class="mt-3 text-[10px] font-bold text-gray-300 uppercase">Excluir Registro</button>
-                    </div>`;
-            });
-        }
-
-        window.deletarManutencao = async (id) => {
-            if(confirm('Excluir este registro de manutenção?')) {
-                await deleteDoc(doc(db, "manutencao", id)); carregarManutencoes();
-            }
-        }
-
-        // AUXILIARES
-        window.limparFormVeiculo = () => {
-            document.getElementById('veiculo-id').value = '';
-            document.getElementById('placa').value = '';
-            document.getElementById('descricao').value = '';
-            document.getElementById('ano').value = '';
-            document.getElementById('btn-salvar-veiculo').innerText = 'Salvar Veículo';
-            document.getElementById('btn-cancelar-veiculo').classList.add('hidden');
-        }
-        
-        window.prepararEdicaoVeiculo = (id, placa, desc, ano) => {
-            document.getElementById('veiculo-id').value = id;
-            document.getElementById('placa').value = placa;
-            document.getElementById('descricao').value = desc;
-            document.getElementById('ano').value = ano;
-            document.getElementById('btn-salvar-veiculo').innerText = 'Atualizar';
-            document.getElementById('btn-cancelar-veiculo').classList.remove('hidden');
-            window.scrollTo(0,0);
-        }
-
-        window.deletarVeiculo = async (id) => {
-            if(confirm('Excluir veículo?')) {
-                await deleteDoc(doc(db, "frota", id)); carregarFrota();
-            }
-        }
-
-        // INICIALIZAÇÃO
-        carregarFrota();
-        carregarManutencoes();
-    </script>
-
-    <script>
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(pageId).classList.add('active-page');
-            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
-            const activeBtn = document.getElementById('btn-' + pageId);
-            activeBtn.classList.remove('opacity-30'); activeBtn.classList.add('text-yellow-400');
-        }
-    </script>
-</body>
-</html>
+            projectId: "shalonapp-702b3
