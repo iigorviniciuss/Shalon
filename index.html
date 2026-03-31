@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Nome atualizado conforme solicitado -->
     <title>Controle Shalon Transportes</title>
 
     <!-- CONFIGURAÇÕES DE APP (PWA) -->
@@ -12,7 +11,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
-    <!-- ÍCONE DA VAN ATUALIZADO -->
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048314.png">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048314.png">
 
@@ -33,7 +31,6 @@
     <!-- ABA 1: HOME -->
     <div id="home" class="page active-page">
         <header class="bg-white p-6 text-center shadow-sm border-b-2 border-yellow-400 safe-top">
-            <!-- Cabeçalho atualizado -->
             <h1 class="text-xl font-black italic uppercase text-black">CONTROLE SHALON TRANSPORTES</h1>
         </header>
         <div class="p-5 max-w-md mx-auto space-y-6">
@@ -85,18 +82,31 @@
                     <option value="">TIPO DE SERVIÇO</option>
                     <option value="Mecânica">Mecânica</option>
                     <option value="Elétrica">Elétrica</option>
+                    <option value="Pneus">Pneus</option>
                     <option value="Ar-condicionado">Ar-condicionado</option>
                     <option value="Vistoria DER">Vistoria DER</option>
                     <option value="Vistoria ANTT">Vistoria ANTT</option>
                     <option value="Tacógrafo">Tacógrafo</option>
                 </select>
-                <input type="text" id="m-desc" placeholder="DETALHES DA MANUTENÇÃO" class="w-full p-4 bg-gray-50 rounded-xl border font-medium uppercase text-xs">
+                <input type="text" id="m-desc" placeholder="DETALHES (EX: TROCA PASTILHA DIANT.)" class="w-full p-4 bg-gray-50 rounded-xl border font-medium uppercase text-xs">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[9px] font-bold ml-1">KM ATUAL</label>
+                        <input type="number" id="m-km" placeholder="000.000" class="w-full p-3 bg-gray-50 rounded-xl border font-bold text-blue-600">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold ml-1">VALOR R$</label>
+                        <input type="number" id="m-valor" placeholder="0,00" class="w-full p-3 bg-gray-50 rounded-xl border font-bold text-green-600">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="text-[9px] font-bold ml-1">DATA</label><input type="date" id="m-data" class="w-full p-3 bg-gray-50 rounded-xl border text-xs"></div>
                     <div id="campo-validade" class="hidden"><label class="text-[9px] font-bold ml-1 text-red-500">VALIDADE</label><input type="date" id="m-validade" class="w-full p-3 bg-red-50 rounded-xl border border-red-200 text-xs"></div>
                 </div>
-                <input type="number" id="m-valor" placeholder="VALOR R$" class="w-full p-4 bg-gray-50 rounded-xl border font-bold text-green-600">
-                <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase shadow-lg">Registrar</button>
+                
+                <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase shadow-lg">Registrar Manutenção</button>
             </div>
             <div id="lista-manutencao" class="space-y-3"></div>
         </div>
@@ -136,7 +146,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Configuração mantida
         const firebaseConfig = {
             apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
             authDomain: "shalonapp-702b3.firebaseapp.com",
@@ -149,7 +158,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // FUNÇÕES DA FROTA
         window.salvarVeiculo = async () => {
             const p = document.getElementById('placa').value.toUpperCase();
             const a = document.getElementById('ano').value;
@@ -170,17 +178,7 @@
                 const v = res.data();
                 selM.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
                 selF.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
-                lista.innerHTML += `
-                <div class="bg-white p-5 rounded-2xl flex justify-between shadow-sm items-center border border-gray-50 animate-fade">
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-black text-black">${v.placa}</span>
-                            <span class="text-[10px] font-bold text-gray-300">${v.ano}</span>
-                        </div>
-                        <span class="text-[10px] font-bold text-gray-400 uppercase italic leading-tight">${v.descricao || ''}</span>
-                    </div>
-                    <button onclick="deletarVeiculo('${res.id}')" class="text-red-500 p-2"><i class="fas fa-times text-lg"></i></button>
-                </div>`;
+                lista.innerHTML += `<div class="bg-white p-5 rounded-2xl flex justify-between shadow-sm items-center border border-gray-50"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="text-sm font-black text-black">${v.placa}</span><span class="text-[10px] font-bold text-gray-300">${v.ano}</span></div><span class="text-[10px] font-bold text-gray-400 uppercase italic leading-tight">${v.descricao || ''}</span></div><button onclick="deletarVeiculo('${res.id}')" class="text-red-500 p-2"><i class="fas fa-times text-lg"></i></button></div>`;
             });
         }
 
@@ -189,14 +187,16 @@
                 placa: document.getElementById('m-placa').value, 
                 tipo: document.getElementById('m-tipo').value, 
                 descricao: document.getElementById('m-desc').value.toUpperCase(),
+                km: document.getElementById('m-km').value, // NOVO CAMPO
                 data: document.getElementById('m-data').value, 
                 valor: document.getElementById('m-valor').value, 
                 validade: document.getElementById('m-validade').value || null, 
                 timestamp: new Date() 
             };
-            if(!d.placa || !d.tipo || !d.valor) return alert('Preencha os campos!');
+            if(!d.placa || !d.tipo || !d.valor || !d.km) return alert('Preencha a Placa, Tipo, KM e Valor!');
             await addDoc(collection(db, "manutencao"), d);
-            document.getElementById('m-desc').value = ''; carregarManutencoes(); atualizarHome();
+            document.getElementById('m-desc').value = ''; document.getElementById('m-km').value = ''; document.getElementById('m-valor').value = '';
+            carregarManutencoes(); atualizarHome();
         }
 
         window.gerarRelatorioFiltrado = async () => {
@@ -212,13 +212,30 @@
                 if ((!placa || m.placa === placa) && (!inicio || m.data >= inicio) && (!fim || m.data <= fim)) {
                     total += parseFloat(m.valor) || 0;
                     listaDiv.innerHTML += `<div class="bg-white p-4 rounded-2xl flex justify-between items-start shadow-sm border border-gray-100 mb-2">
-                        <div class="flex flex-col"><span class="text-[9px] font-black text-gray-300 uppercase">${m.data.split('-').reverse().join('/')}</span>
-                        <span class="text-xs font-black uppercase text-black">${m.tipo}</span>
-                        <span class="text-[10px] font-bold text-gray-500 italic">${m.descricao || ''}</span></div>
-                        <div class="text-right text-sm font-black text-green-600">R$ ${parseFloat(m.valor).toLocaleString('pt-BR')}</div></div>`;
+                        <div class="flex flex-col">
+                            <span class="text-[9px] font-black text-gray-300 uppercase">${m.data.split('-').reverse().join('/')}</span>
+                            <span class="text-xs font-black uppercase text-black">${m.tipo}</span>
+                            <span class="text-[9px] font-bold text-blue-500">${m.km ? parseInt(m.km).toLocaleString('pt-BR') : '---'} KM</span>
+                            <span class="text-[10px] font-bold text-gray-500 italic">${m.descricao || ''}</span>
+                        </div>
+                        <div class="text-right text-sm font-black text-green-600">R$ ${parseFloat(m.valor).toLocaleString('pt-BR')}</div>
+                    </div>`;
                 }
             });
             document.getElementById('f-resultado').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        window.carregarManutencoes = async () => {
+            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
+            const lista = document.getElementById('lista-manutencao');
+            lista.innerHTML = '';
+            snap.forEach(res => {
+                const m = res.data();
+                lista.innerHTML += `<div class="bg-white p-3 rounded-xl text-[10px] flex justify-between shadow-sm items-center border border-gray-100 mb-1">
+                    <span><b>${m.placa}</b> | ${m.tipo} (${m.km ? parseInt(m.km).toLocaleString('pt-BR') : '---'} KM)</span>
+                    <button onclick="deletarManutencao('${res.id}')">❌</button>
+                </div>`;
+            });
         }
 
         window.atualizarHome = async () => {
@@ -235,16 +252,6 @@
                 const dVal = new Date(m.validade);
                 const card = `<div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 ${dVal < hoje ? 'border-red-500' : 'border-orange-400'} flex justify-between items-center text-xs mb-2"><div><b>${m.placa}</b><br>${m.tipo}</div><div class="text-right">Validade<br><b>${m.validade.split('-').reverse().join('/')}</b></div></div>`;
                 if (dVal < hoje) lVenc.innerHTML += card; else if (dVal <= l60) lPend.innerHTML += card;
-            });
-        }
-
-        window.carregarManutencoes = async () => {
-            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
-            const lista = document.getElementById('lista-manutencao');
-            lista.innerHTML = '';
-            snap.forEach(res => {
-                const m = res.data();
-                lista.innerHTML += `<div class="bg-white p-3 rounded-xl text-[10px] flex justify-between shadow-sm items-center border border-gray-100 mb-1"><span><b>${m.placa}</b> | ${m.tipo}</span><button onclick="deletarManutencao('${res.id}')">❌</button></div>`;
             });
         }
 
