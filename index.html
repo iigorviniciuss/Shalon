@@ -120,4 +120,174 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
             authDomain: "shalonapp-702b3.firebaseapp.com",
-            projectId: "shalonapp-702b3
+            projectId: "shalonapp-702b3",
+            storageBucket: "shalonapp-702b3.firebasestorage.app",
+            messagingSenderId: "843005158617",
+            appId: "1:843005158617:web:bda693516bb45332880ac8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- RELATÓRIOS (HOME) ---
+        window.gerarRelatorios = async () => {
+            const snap = await getDocs(collection(db, "manutencao"));
+            let total = 0;
+            let gastosPorVan = {};
+            let hoje = new Date();
+            let limiteVencimento = new Date();
+            limiteVencimento.setDate(hoje.getDate() + 30);
+
+            const listaVencimentos = document.getElementById('lista-vencimentos');
+            const resumoVans = document.getElementById('resumo-por-van');
+            listaVencimentos.innerHTML = '';
+            resumoVans.innerHTML = '';
+
+            snap.forEach(res => {
+                const m = res.data();
+                const valor = parseFloat(m.valor) || 0;
+                total += valor;
+
+                // Gastos por van
+                gastosPorVan[m.placa] = (gastosPorVan[m.placa] || 0) + valor;
+
+                // Checar vencimentos
+                if (m.validade) {
+                    let dataValidade = new Date(m.validade);
+                    if (dataValidade <= limiteVencimento) {
+                        const diasRestantes = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+                        listaVencimentos.innerHTML += `
+                            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg flex justify-between items-center animate-fade">
+                                <div>
+                                    <p class="text-[10px] font-bold text-red-600 uppercase">${m.tipo}</p>
+                                    <p class="text-sm font-black text-gray-800">${m.placa}</p>
+                                </div>
+                                <p class="text-xs font-bold text-red-500">${diasRestantes <= 0 ? 'VENCIDO' : 'Vence em '+diasRestantes+' dias'}</p>
+                            </div>`;
+                    }
+                }
+            });
+
+            document.getElementById('total-geral').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            // Listar resumo por van
+            for (let placa in gastosPorVan) {
+                resumoVans.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-50">
+                        <span class="font-bold text-gray-600 uppercase text-xs">${placa}</span>
+                        <span class="font-black text-black text-sm">R$ ${gastosPorVan[placa].toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    </div>`;
+            }
+
+            if (listaVencimentos.innerHTML === '') {
+                listaVencimentos.innerHTML = '<p class="text-xs text-gray-400 italic">Tudo em dia para os próximos 30 dias.</p>';
+            }
+        }
+
+        // --- MANUTENÇÃO ---
+        window.verificarValidade = () => {
+            const tipo = document.getElementById('m-tipo').value;
+            const tiposComValidade = ["Vistoria DER", "Vistoria ANTT", "Tacógrafo"];
+            document.getElementById('campo-validade').classList.toggle('hidden', !tiposComValidade.includes(tipo));
+        }
+
+        window.salvarManutencao = async () => {
+            const dados = {
+                placa: document.getElementById('m-placa').value,
+                tipo: document.getElementById('m-tipo').value,
+                descricao: document.getElementById('m-desc').value,
+                data: document.getElementById('m-data').value,
+                valor: document.getElementById('m-valor').value,
+                validade: document.getElementById('m-validade').value || null,
+                timestamp: new Date()
+            };
+            if(!dados.placa || !dados.tipo || !dados.data) return alert('Preencha os dados!');
+            try {
+                await addDoc(collection(db, "manutencao"), dados);
+                alert('Registrado!');
+                carregarManutencoes(); gerarRelatorios();
+            } catch (e) { alert(e); }
+        }
+
+        window.carregarManutencoes = async () => {
+            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
+            const lista = document.getElementById('lista-manutencao');
+            lista.innerHTML = '';
+            snap.forEach(res => {
+                const m = res.data();
+                lista.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 ${m.validade ? 'border-red-400' : 'border-gray-200'} animate-fade">
+                        <div class="flex justify-between">
+                            <p class="text-xs font-bold text-yellow-600 uppercase">${m.placa}</p>
+                            <p class="text-[10px] text-gray-400">${m.data.split('-').reverse().join('/')}</p>
+                        </div>
+                        <p class="font-black">${m.tipo}</p>
+                        <p class="text-xs text-green-600 font-bold">R$ ${m.valor}</p>
+                        <button onclick="deletarManutencao('${res.id}')" class="mt-2 text-[10px] text-red-300 font-bold uppercase">Excluir</button>
+                    </div>`;
+            });
+        }
+
+        window.deletarManutencao = async (id) => {
+            if(confirm('Excluir registro?')) {
+                await deleteDoc(doc(db, "manutencao", id)); 
+                carregarManutencoes(); gerarRelatorios();
+            }
+        }
+
+        // --- FROTA ---
+        window.salvarVeiculo = async () => {
+            const id = document.getElementById('veiculo-id').value;
+            const dados = { placa: document.getElementById('placa').value.toUpperCase(), descricao: document.getElementById('descricao').value, ano: document.getElementById('ano').value };
+            try {
+                if(id) await updateDoc(doc(db, "frota", id), dados);
+                else await addDoc(collection(db, "frota"), dados);
+                limparFormVeiculo(); carregarFrota();
+            } catch (e) { alert(e); }
+        }
+
+        window.carregarFrota = async () => {
+            const snap = await getDocs(collection(db, "frota"));
+            const lista = document.getElementById('lista-frota');
+            const selectM = document.getElementById('m-placa');
+            lista.innerHTML = '';
+            selectM.innerHTML = '<option value="">SELECIONE A PLACA</option>';
+            snap.forEach(res => {
+                const v = res.data();
+                selectM.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
+                lista.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center">
+                        <div><p class="text-xl font-black">${v.placa}</p></div>
+                        <button onclick="deletarVeiculo('${res.id}')" class="text-red-300"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
+            });
+        }
+
+        window.deletarVeiculo = async (id) => {
+            if(confirm('Excluir van?')) { await deleteDoc(doc(db, "frota", id)); carregarFrota(); }
+        }
+
+        window.limparFormVeiculo = () => {
+            document.getElementById('veiculo-id').value = '';
+            document.getElementById('placa').value = '';
+            document.getElementById('descricao').value = '';
+            document.getElementById('ano').value = '';
+        }
+
+        // INICIALIZAÇÃO
+        carregarFrota();
+        carregarManutencoes();
+        gerarRelatorios();
+    </script>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
+            document.getElementById('btn-' + pageId).classList.remove('opacity-30');
+            document.getElementById('btn-' + pageId).classList.add('text-yellow-400');
+        }
+    </script>
+</body>
+</html>
