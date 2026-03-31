@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shalon - Relatórios Avançados</title>
+    <title>Shalon - Painel de Controle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -15,243 +15,68 @@
 </head>
 <body class="bg-gray-100 pb-28 font-sans text-gray-900">
 
-    <!-- ABA 1: RELATÓRIOS (HOME) -->
+    <!-- ABA 1: NOVA HOME (STATUS) -->
     <div id="home" class="page active-page">
         <header class="bg-white p-6 text-center shadow-sm border-b-2 border-yellow-400">
-            <h1 class="text-2xl font-black italic tracking-tighter uppercase">SHALON RELATÓRIOS</h1>
+            <h1 class="text-2xl font-black italic tracking-tighter uppercase text-black">SHALON CONTROL</h1>
         </header>
 
         <div class="p-5 max-w-md mx-auto space-y-6">
             
-            <!-- FILTROS -->
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-                <h3 class="text-xs font-black uppercase mb-4 text-gray-400"><i class="fas fa-filter mr-1"></i> Filtros de Busca</h3>
-                
-                <div class="space-y-4">
-                    <!-- Placa -->
-                    <select id="f-placa" class="w-full p-3 bg-gray-50 rounded-xl border font-bold uppercase text-sm outline-none focus:border-yellow-500">
-                        <option value="">TODAS AS VANS</option>
-                    </select>
+            <!-- CARD VEÍCULOS -->
+            <div class="bg-black text-white p-6 rounded-[2rem] shadow-xl flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] opacity-60 uppercase font-bold tracking-widest">Frota Ativa</p>
+                    <h2 id="qtd-veiculos" class="text-4xl font-black text-yellow-400">0</h2>
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Veículos Cadastrados</p>
+                </div>
+                <i class="fas fa-shuttle-van text-5xl opacity-20"></i>
+            </div>
 
-                    <!-- Datas -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-[9px] font-bold uppercase ml-1">De:</label>
-                            <input type="date" id="f-inicio" class="w-full p-3 bg-gray-50 rounded-xl border text-xs outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold uppercase ml-1">Até:</label>
-                            <input type="date" id="f-fim" class="w-full p-3 bg-gray-50 rounded-xl border text-xs outline-none">
-                        </div>
-                    </div>
-
-                    <!-- Tipos de Serviço (Checkboxes) -->
-                    <div class="bg-gray-50 p-3 rounded-xl border">
-                        <p class="text-[9px] font-bold uppercase mb-2 text-gray-400">Tipos de Serviço:</p>
-                        <div class="grid grid-cols-1 gap-2 text-xs font-medium" id="f-servicos">
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Mecânica" checked> Mecânica</label>
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Elétrica" checked> Elétrica</label>
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Ar-condicionado" checked> Ar-condicionado</label>
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Vistoria DER" checked> Vistoria DER</label>
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Vistoria ANTT" checked> Vistoria ANTT</label>
-                            <label class="flex items-center gap-2"><input type="checkbox" value="Tacógrafo" checked> Tacógrafo</label>
-                        </div>
-                    </div>
-
-                    <button onclick="gerarRelatorios()" class="w-full bg-yellow-400 text-black p-4 rounded-xl font-black uppercase shadow-lg active:scale-95 transition-all">
-                        Aplicar Filtros
-                    </button>
+            <!-- SEÇÃO: VENCIDOS -->
+            <div>
+                <h3 class="text-sm font-black uppercase italic mb-3 flex items-center gap-2 text-red-600">
+                    <i class="fas fa-skull-crossbones"></i> Manutenções Vencidas
+                </h3>
+                <div id="lista-vencidas" class="space-y-3">
+                    <!-- Cards de vistorias vencidas -->
                 </div>
             </div>
 
-            <!-- RESULTADO TOTAL -->
-            <div class="bg-black text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden text-center">
-                <p class="text-[10px] opacity-60 uppercase font-bold tracking-widest">Gasto no Período Selecionado</p>
-                <h2 id="total-geral" class="text-4xl font-black text-yellow-400 mt-1">R$ 0,00</h2>
+            <!-- SEÇÃO: PENDENTES (PRÓXIMOS 60 DIAS) -->
+            <div>
+                <h3 class="text-sm font-black uppercase italic mb-3 flex items-center gap-2 text-orange-500">
+                    <i class="fas fa-exclamation-circle"></i> Atenção (Próximos 60 dias)
+                </h3>
+                <div id="lista-pendentes" class="space-y-3">
+                    <!-- Cards de vistorias próximas do vencimento -->
+                </div>
             </div>
 
-            <!-- ALERTA DE VENCIMENTOS (VISTORIAS) -->
-            <div id="secao-vencimentos">
-                <h3 class="text-sm font-black uppercase italic mb-3 flex items-center gap-2 text-red-600">
-                    <i class="fas fa-clock"></i> Vencimentos (Próximos 30 dias)
-                </h3>
-                <div id="lista-vencimentos" class="space-y-3"></div>
-            </div>
         </div>
     </div>
 
-    <!-- ABAS RESTANTES (FROTA E MANUTENÇÃO - IGUAIS ANTERIORES) -->
+    <!-- ABA 2: FROTA -->
     <div id="frota" class="page"><div class="p-6">
-        <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2"><i class="fas fa-shuttle-van text-yellow-500"></i> Vans</h2>
-        <div class="bg-white p-6 rounded-3xl shadow-md border-2 border-gray-50 mb-8 space-y-3">
-            <input type="hidden" id="veiculo-id">
+        <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2"><i class="fas fa-shuttle-van text-yellow-500"></i> Gerenciar Frota</h2>
+        <div class="bg-white p-6 rounded-3xl shadow-md mb-8 space-y-3 border-2 border-gray-50">
             <input type="text" id="placa" placeholder="PLACA" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase">
-            <input type="text" id="descricao" placeholder="DESCRIÇÃO" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
-            <input type="number" id="ano" placeholder="ANO" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
-            <button onclick="salvarVeiculo()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase">Salvar Van</button>
+            <input type="text" id="descricao" placeholder="MODELO (Ex: Sprinter)" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
+            <button onclick="salvarVeiculo()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase shadow-lg">Cadastrar Van</button>
         </div>
         <div id="lista-frota" class="space-y-4"></div>
     </div></div>
 
+    <!-- ABA 3: REGISTROS -->
     <div id="manutencao" class="page"><div class="p-6">
-        <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2"><i class="fas fa-tools text-yellow-500"></i> Novo Registro</h2>
-        <div class="bg-white p-6 rounded-3xl shadow-md border-2 border-gray-50 mb-8 space-y-3">
-            <select id="m-placa" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase"></select>
-            <select id="m-tipo" onchange="verificarValidade()" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold italic">
-                <option value="">TIPO DE SERVIÇO</option>
-                <option value="Mecânica">Manutenção Mecânica</option>
-                <option value="Elétrica">Manutenção Elétrica</option>
-                <option value="Ar-condicionado">Manutenção Ar-condicionado</option>
+        <h2 class="text-2xl font-black mb-6 italic uppercase flex items-center gap-2"><i class="fas fa-tools text-yellow-500"></i> Novo Serviço</h2>
+        <div class="bg-white p-6 rounded-3xl shadow-md mb-8 space-y-3 border-2 border-gray-50">
+            <select id="m-placa" class="w-full p-4 bg-gray-50 rounded-xl border font-bold uppercase"></select>
+            <select id="m-tipo" onchange="verificarValidade()" class="w-full p-4 bg-gray-50 rounded-xl border font-bold italic">
+                <option value="">TIPO</option>
+                <option value="Mecânica">Mecânica</option>
+                <option value="Elétrica">Elétrica</option>
                 <option value="Vistoria DER">Vistoria DER</option>
                 <option value="Vistoria ANTT">Vistoria ANTT</option>
-                <option value="Tacógrafo">Aferição de Tacógrafo</option>
-            </select>
-            <input type="text" id="m-desc" placeholder="DESCRIÇÃO" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none">
-            <div class="grid grid-cols-2 gap-2">
-                <input type="date" id="m-data" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none text-xs">
-                <input type="number" id="m-valor" placeholder="R$" class="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-yellow-400 outline-none font-bold text-green-600">
-            </div>
-            <div id="campo-validade" class="hidden"><input type="date" id="m-validade" class="w-full p-4 bg-red-50 rounded-xl border-2 border-red-200 outline-none font-bold"></div>
-            <button onclick="salvarManutencao()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black uppercase">Registrar</button>
-        </div>
-        <div id="lista-manutencao" class="space-y-4"></div>
-    </div></div>
-
-    <!-- MENU INFERIOR -->
-    <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
-        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-chart-pie text-xl"></i></button>
-        <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-shuttle-van text-xl"></i></button>
-        <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-xl"></i></button>
-    </nav>
-
-    <!-- LOGICA FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
-            authDomain: "shalonapp-702b3.firebaseapp.com",
-            projectId: "shalonapp-702b3",
-            storageBucket: "shalonapp-702b3.firebasestorage.app",
-            messagingSenderId: "843005158617",
-            appId: "1:843005158617:web:bda693516bb45332880ac8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // --- RELATÓRIOS COM FILTROS ---
-        window.gerarRelatorios = async () => {
-            const placaFiltro = document.getElementById('f-placa').value;
-            const dataInicio = document.getElementById('f-inicio').value;
-            const dataFim = document.getElementById('f-fim').value;
+                <option value="Tacógrafo">Tacógrafo</option>
             
-            // Pega quais serviços estão marcados
-            const servicosMarcados = Array.from(document.querySelectorAll('#f-servicos input:checked')).map(el => el.value);
-
-            const snap = await getDocs(collection(db, "manutencao"));
-            let total = 0;
-            let hoje = new Date();
-            let limiteVenc = new Date(); limiteVenc.setDate(hoje.getDate() + 30);
-
-            const listaVenc = document.getElementById('lista-vencimentos');
-            listaVenc.innerHTML = '';
-
-            snap.forEach(res => {
-                const m = res.data();
-                const dataServico = m.data; // Formato YYYY-MM-DD
-                
-                // 1. Filtro de Placa
-                if (placaFiltro && m.placa !== placaFiltro) return;
-
-                // 2. Filtro de Tipo de Serviço
-                if (!servicosMarcados.includes(m.tipo)) return;
-
-                // 3. Filtro de Datas
-                if (dataInicio && dataServico < dataInicio) return;
-                if (dataFim && dataServico > dataFim) return;
-
-                // Se passou em todos os filtros, soma
-                total += parseFloat(m.valor) || 0;
-
-                // Lógica de Vencimentos (sempre mostra os próximos 30 dias independente do filtro de data)
-                if (m.validade) {
-                    let dVal = new Date(m.validade);
-                    if (dVal <= limiteVenc) {
-                        listaVenc.innerHTML += `<div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg text-xs font-bold animate-fade">${m.placa} - ${m.tipo} (Vence ${m.validade.split('-').reverse().join('/')})</div>`;
-                    }
-                }
-            });
-
-            document.getElementById('total-geral').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            if (listaVenc.innerHTML === '') listaVenc.innerHTML = '<p class="text-[10px] text-gray-400 italic text-center">Nenhum vencimento próximo.</p>';
-        }
-
-        // --- RESTO DAS FUNÇÕES (ADAPTADAS PARA RODAR JUNTO) ---
-        window.salvarVeiculo = async () => {
-            const dados = { placa: document.getElementById('placa').value.toUpperCase(), descricao: document.getElementById('descricao').value, ano: document.getElementById('ano').value };
-            await addDoc(collection(db, "frota"), dados);
-            carregarFrota();
-        }
-
-        window.carregarFrota = async () => {
-            const snap = await getDocs(collection(db, "frota"));
-            const lista = document.getElementById('lista-frota');
-            const selM = document.getElementById('m-placa');
-            const selF = document.getElementById('f-placa');
-            lista.innerHTML = '';
-            selM.innerHTML = '<option value="">PLACA</option>';
-            selF.innerHTML = '<option value="">TODAS AS VANS</option>';
-            snap.forEach(res => {
-                const v = res.data();
-                selM.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
-                selF.innerHTML += `<option value="${v.placa}">${v.placa}</option>`;
-                lista.innerHTML += `<div class="bg-white p-4 rounded-xl flex justify-between"><b>${v.placa}</b><button onclick="deletarVeiculo('${res.id}')">❌</button></div>`;
-            });
-        }
-
-        window.salvarManutencao = async () => {
-            const dados = { 
-                placa: document.getElementById('m-placa').value, 
-                tipo: document.getElementById('m-tipo').value, 
-                data: document.getElementById('m-data').value, 
-                valor: document.getElementById('m-valor').value,
-                validade: document.getElementById('m-validade').value || null,
-                timestamp: new Date()
-            };
-            await addDoc(collection(db, "manutencao"), dados);
-            carregarManutencoes(); gerarRelatorios();
-        }
-
-        window.carregarManutencoes = async () => {
-            const snap = await getDocs(query(collection(db, "manutencao"), orderBy("timestamp", "desc")));
-            const lista = document.getElementById('lista-manutencao');
-            lista.innerHTML = '';
-            snap.forEach(res => {
-                const m = res.data();
-                lista.innerHTML += `<div class="bg-white p-4 rounded-xl text-xs"><b>${m.placa}</b> - ${m.tipo} - R$ ${m.valor}</div>`;
-            });
-        }
-
-        window.verificarValidade = () => {
-            const tipo = document.getElementById('m-tipo').value;
-            document.getElementById('campo-validade').classList.toggle('hidden', !["Vistoria DER", "Vistoria ANTT", "Tacógrafo"].includes(tipo));
-        }
-
-        window.deletarVeiculo = async (id) => { if(confirm('Excluir?')) { await deleteDoc(doc(db, "frota", id)); carregarFrota(); } }
-
-        carregarFrota(); carregarManutencoes(); gerarRelatorios();
-    </script>
-
-    <script>
-        function showPage(pId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(pId).classList.add('active-page');
-            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
-            document.getElementById('btn-' + pId).classList.remove('opacity-30');
-            document.getElementById('btn-' + pId).classList.add('text-yellow-400');
-        }
-    </script>
-</body>
-</html>
