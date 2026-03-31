@@ -7,49 +7,111 @@
     <link rel="manifest" href="data:application/manifest+json,{"name":"Shalon Transportes","short_name":"Shalon","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#000000","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1042/1042680.png","sizes":"512x512","type":"image/png"}]}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .page { display: none; }
+        .active-page { display: block; }
+    </style>
 </head>
-<body class="bg-gray-100 pb-20">
-    <header class="bg-white p-6 text-center shadow-sm border-b-2 border-yellow-400">
-        <h1 class="text-3xl font-black italic tracking-tighter">SHALON</h1>
-        <p class="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">Transportes e Logística</p>
-    </header>
+<body class="bg-gray-100 pb-24">
 
-    <div class="p-5 max-w-md mx-auto">
-        <div class="bg-black text-white p-8 rounded-[2rem] mb-6 shadow-xl relative overflow-hidden">
-            <h2 class="text-2xl font-bold italic text-yellow-400 leading-none">FROTA ATIVA</h2>
-            <p class="text-[10px] opacity-50 mt-2 uppercase tracking-widest">Controle de Manutenção</p>
-            <i class="fas fa-truck text-7xl absolute -right-4 -bottom-2 opacity-10"></i>
-        </div>
-
-        <button onclick="ativarAlertas()" id="btn" class="w-full bg-yellow-400 text-black p-6 rounded-2xl font-black shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
-            <i class="fas fa-bell"></i> ATIVAR ALERTAS DE 30 DIAS
-        </button>
-
-        <div class="mt-10">
-            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Próximos Vencimentos</h3>
-            <div class="bg-white p-8 rounded-[2rem] text-center border-2 border-dashed border-gray-200">
-                <p class="text-gray-400 text-sm italic">Nenhum alerta pendente hoje.</p>
+    <!-- ABA 1: HOME -->
+    <div id="home" class="page active-page">
+        <header class="bg-white p-6 text-center shadow-sm border-b-2 border-yellow-400">
+            <h1 class="text-3xl font-black italic tracking-tighter text-black">SHALON</h1>
+            <p class="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">Transportes e Logística</p>
+        </header>
+        <div class="p-5 max-w-md mx-auto">
+            <div class="bg-black text-white p-8 rounded-[2rem] mb-6 shadow-xl relative overflow-hidden">
+                <h2 class="text-2xl font-bold italic text-yellow-400 leading-none">FROTA ATIVA</h2>
+                <p class="text-[10px] opacity-50 mt-2 uppercase tracking-widest">Painel na Nuvem</p>
+                <i class="fas fa-truck text-7xl absolute -right-4 -bottom-2 opacity-10"></i>
+            </div>
+            <div id="status-cloud" class="text-center text-[10px] font-bold text-green-600 mb-4 uppercase tracking-widest">
+                <i class="fas fa-cloud"></i> Sincronizado com Google Cloud
             </div>
         </div>
     </div>
 
-    <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center">
-        <i class="fas fa-home text-yellow-400 text-xl"></i>
-        <i class="fas fa-truck-moving opacity-30 text-xl"></i>
-        <i class="fas fa-tools opacity-30 text-xl"></i>
-        <i class="fas fa-user opacity-30 text-xl"></i>
+    <!-- ABA 2: FROTA -->
+    <div id="frota" class="page">
+        <div class="p-6">
+            <h2 class="text-2xl font-black mb-6 italic text-black">CADASTRAR VEÍCULO</h2>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-2 border-gray-100">
+                <input type="text" id="placa" placeholder="PLACA (Ex: ABC-1234)" class="w-full p-4 bg-gray-50 rounded-xl mb-4 border-2 border-transparent focus:border-yellow-400 outline-none font-bold uppercase">
+                <button onclick="salvarVeiculo()" class="w-full bg-black text-yellow-400 p-4 rounded-xl font-black shadow-lg uppercase">Salvar na Nuvem</button>
+            </div>
+            <div id="lista-frota" class="mt-8 space-y-4">
+                <!-- Veículos aparecem aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 3: MANUTENÇÃO -->
+    <div id="manutencao" class="page">
+        <div class="p-6 text-center mt-10">
+            <i class="fas fa-tools text-6xl text-gray-200 mb-4"></i>
+            <h2 class="text-xl font-black italic">MANUTENÇÃO</h2>
+            <p class="text-gray-400">Módulo em desenvolvimento para sua frota.</p>
+        </div>
+    </div>
+
+    <!-- MENU INFERIOR -->
+    <nav class="fixed bottom-6 left-6 right-6 bg-black text-white rounded-full flex justify-around p-4 shadow-2xl items-center z-50">
+        <button onclick="showPage('home')" id="btn-home" class="text-yellow-400"><i class="fas fa-home text-xl"></i></button>
+        <button onclick="showPage('frota')" id="btn-frota" class="opacity-30"><i class="fas fa-truck-moving text-xl"></i></button>
+        <button onclick="showPage('manutencao')" id="btn-manutencao" class="opacity-30"><i class="fas fa-tools text-xl"></i></button>
     </nav>
 
-    <script>
-        function ativarAlertas() {
-            Notification.requestPermission().then(p => {
-                if(p === 'granted') {
-                    alert('✅ Alertas da Shalon ativados com sucesso!');
-                    const b = document.getElementById('btn');
-                    b.innerHTML = 'ALERTAS ATIVOS';
-                    b.className = 'w-full bg-green-600 text-white p-6 rounded-2xl font-black shadow-lg';
-                }
+    <!-- FIREBASE SETUP -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCKa107xJoCB_L0W-YR66CJR9UUkt9yyQI",
+          authDomain: "shalonapp-702b3.firebaseapp.com",
+          projectId: "shalonapp-702b3",
+          storageBucket: "shalonapp-702b3.firebasestorage.app",
+          messagingSenderId: "843005158617",
+          appId: "1:843005158617:web:bda693516bb45332880ac8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.salvarVeiculo = async () => {
+            const placa = document.getElementById('placa').value;
+            if(!placa) return alert('Digite a placa!');
+            try {
+                await addDoc(collection(db, "frota"), { placa: placa, data: new Date() });
+                alert('🚛 Veículo salvo na nuvem!');
+                document.getElementById('placa').value = '';
+                carregarFrota();
+            } catch (e) { alert('Erro ao salvar: ' + e); }
+        }
+
+        window.carregarFrota = async () => {
+            const querySnapshot = await getDocs(collection(db, "frota"));
+            const lista = document.getElementById('lista-frota');
+            lista.innerHTML = '';
+            querySnapshot.forEach((doc) => {
+                lista.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-400">
+                        <p class="text-xs text-gray-400 font-bold uppercase">Caminhão</p>
+                        <p class="text-xl font-black">${doc.data().placa}</p>
+                    </div>`;
             });
+        }
+        carregarFrota();
+    </script>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.add('opacity-30'); b.classList.remove('text-yellow-400'); });
+            const activeBtn = document.getElementById('btn-' + pageId);
+            activeBtn.classList.remove('opacity-30'); activeBtn.classList.add('text-yellow-400');
         }
     </script>
 </body>
